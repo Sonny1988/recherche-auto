@@ -1,0 +1,15 @@
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"C:/Users/Ubert/OneDrive/Desktop/claude/recherche auto/scripts/hooks/inject-primer.sh\"",
+            "statusMessage": "Chargement primer recherche-auto..."
+          }
+        ]
+      }
+    ]
+  }
+}

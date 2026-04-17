@@ -1,6 +1,6 @@
 import 'dotenv/config';
 import { TARGET_CARS, TARGET_CAMPINGCARS } from './config.js';
-import { searchAllFrance } from './scrapers/leboncoin.js';
+import { searchAllFrance } from './scrapers/autoscout-fr.js';
 import { analyzeArbitrage } from './arbitrage.js';
 import { syncAll } from './airtable.js';
 import { sendAlert, sendSummary } from './telegram.js';
@@ -16,7 +16,7 @@ async function run() {
   }
 
   // 1. Scraper les annonces en France
-  console.log('📡 Phase 1: Scraping LeBonCoin France...');
+  console.log('📡 Phase 1: Scraping AutoScout24.fr...');
   const allTargets = [...TARGET_CARS, ...TARGET_CAMPINGCARS];
   const annonces = await searchAllFrance(allTargets);
   console.log(`   → ${annonces.length} annonces récupérées\n`);

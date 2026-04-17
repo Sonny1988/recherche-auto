@@ -1,110 +1,83 @@
 import axios from 'axios';
 import * as cheerio from 'cheerio';
-import { HTTP_HEADERS, DELAY_MS } from '../config.js';
+import { DELAY_MS } from '../config.js';
 
-const LBC_API = 'https://api.leboncoin.fr/api/adfinder/v1/search';
-const LBC_API_KEY = 'ba0c2dad52b3585c9a55a7bddc44ce9b';
-
-// Catégories LeBonCoin
-const CAT_VOITURES = '2';
-const CAT_CAMPINGCAR = '5'; // Caravaning
+const BROWSER_HEADERS = {
+  'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
+  'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8',
+  'Accept-Language': 'fr-FR,fr;q=0.9,en;q=0.8',
+  'Accept-Encoding': 'gzip, deflate, br',
+  'Connection': 'keep-alive',
+  'Upgrade-Insecure-Requests': '1',
+  'Sec-Fetch-Dest': 'document',
+  'Sec-Fetch-Mode': 'navigate',
+  'Sec-Fetch-Site': 'none',
+};
 
 function sleep(ms) {
   return new Promise(r => setTimeout(r, ms));
 }
 
-function buildCarFilters(target) {
-  return {
-    category: { id: CAT_VOITURES },
-    keywords: { text: `${target.marque} ${target.modele}` },
-    filters: {
-      ranges: {
-        price: { min: target.minPrice, max: target.maxPrice },
-        regdate: { min: target.minYear },
-      }
-    },
-    limit: 35,
-    offset: 0,
-    sort_by: 'time',
-    sort_order: 'desc',
-  };
+function buildUrl(target) {
+  if (target.type === 'camping-car') {
+    return `https://www.leboncoin.fr/recherche?category=5&text=${encodeURIComponent(target.marque)}&sort=time&order=desc`;
+  }
+  const params = new URLSearchParams({
+    category: '2',
+    brand: target.marque,
+    model: target.modele,
+    price: `${target.minPrice}-${target.maxPrice}`,
+    sort: 'time',
+    order: 'desc',
+  });
+  return `https://www.leboncoin.fr/recherche?${params}`;
 }
 
-function buildCampingCarFilters(target) {
-  return {
-    category: { id: CAT_CAMPINGCAR },
-    keywords: { text: target.marque },
-    limit: 35,
-    offset: 0,
-    sort_by: 'time',
-    sort_order: 'desc',
-  };
-}
-
-function parseAd(ad) {
+function parseAd(ad, type = 'voiture') {
   const attrs = {};
   (ad.attributes || []).forEach(a => { attrs[a.key] = a.value_label || a.value; });
 
   const price = ad.price?.[0] ?? null;
   if (!price) return null;
 
+  const isCampingCar = type === 'camping-car';
+  const path = isCampingCar ? 'caravaning' : 'voitures';
+
   return {
     id: ad.list_id?.toString(),
     titre: ad.subject,
     prix_fr: price,
     annee: parseInt(attrs.regdate) || null,
-    km: parseInt(attrs.mileage?.replace(/\D/g, '')) || null,
+    km: parseInt((attrs.mileage || '').replace(/\D/g, '')) || null,
     carburant: attrs.fuel || null,
     boite: attrs.gearbox || null,
     localisation: `${ad.location?.city || ''} (${ad.location?.zipcode || ''})`,
     vendeur_pro: ad.owner?.type === 'pro',
-    lien: `https://www.leboncoin.fr/voitures/${ad.list_id}.htm`,
+    lien: ad.url || `https://www.leboncoin.fr/${path}/${ad.list_id}.htm`,
     photos: ad.images?.urls_large?.slice(0, 3) || [],
     plateforme: 'LeBonCoin',
-    type: 'voiture',
-  };
-}
-
-function parseCampingCarAd(ad) {
-  const price = ad.price?.[0] ?? null;
-  if (!price) return null;
-
-  return {
-    id: ad.list_id?.toString(),
-    titre: ad.subject,
-    prix_fr: price,
-    annee: null,
-    km: null,
-    carburant: null,
-    boite: null,
-    localisation: `${ad.location?.city || ''} (${ad.location?.zipcode || ''})`,
-    vendeur_pro: ad.owner?.type === 'pro',
-    lien: `https://www.leboncoin.fr/caravaning/${ad.list_id}.htm`,
-    photos: ad.images?.urls_large?.slice(0, 3) || [],
-    plateforme: 'LeBonCoin',
-    type: 'camping-car',
+    type,
   };
 }
 
 export async function searchLeboncoin(target) {
   const isCampingCar = target.type === 'camping-car';
-  const body = isCampingCar ? buildCampingCarFilters(target) : buildCarFilters(target);
+  const url = buildUrl(target);
 
   try {
-    const res = await axios.post(LBC_API, body, {
-      headers: {
-        ...HTTP_HEADERS,
-        'api_key': LBC_API_KEY,
-        'Content-Type': 'application/json',
-        'Origin': 'https://www.leboncoin.fr',
-        'Referer': 'https://www.leboncoin.fr/',
-      },
-      timeout: 15000,
-    });
+    const res = await axios.get(url, { headers: BROWSER_HEADERS, timeout: 20000 });
+    const $ = cheerio.load(res.data);
+    const raw = $('script#__NEXT_DATA__').text();
+    if (!raw) throw new Error('__NEXT_DATA__ absent');
 
-    const ads = res.data?.ads || [];
-    const parser = isCampingCar ? parseCampingCarAd : parseAd;
-    const results = ads.map(parser).filter(Boolean);
+    const data = JSON.parse(raw);
+    const ads =
+      data?.props?.pageProps?.searchData?.ads ||
+      data?.props?.pageProps?.ads ||
+      [];
+
+    const type = isCampingCar ? 'camping-car' : 'voiture';
+    const results = ads.map(ad => parseAd(ad, type)).filter(Boolean);
 
     console.log(`[LeBonCoin] ${target.marque} ${target.modele || ''} → ${results.length} annonces`);
     return results;
