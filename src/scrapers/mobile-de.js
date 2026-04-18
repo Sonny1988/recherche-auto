@@ -1,5 +1,5 @@
 import FirecrawlApp from '@mendable/firecrawl-js';
-import { DELAY_MS } from '../config.js';
+import { DELAY_MS, MOBILE_DE_MAKE_IDS } from '../config.js';
 import { getCached, setCached } from '../cache.js';
 
 const fc = new FirecrawlApp({ apiKey: process.env.FIRECRAWL_API_KEY });
@@ -21,21 +21,32 @@ export async function getRawPricesDE(target, bucket = null) {
   const cacheKey = `mobile-${target.searchDE}-${yearKey}`;
   const cached = getCached(cacheKey);
   if (cached) {
-    console.log(`[Mobile.de] ${target.searchDE} ${yearKey} → cache (${cached.length} prix)`);
+    console.log(`[Mobile.de] ${target.modele} ${yearKey} → cache (${cached.length} prix)`);
     return { prices: cached, url: null };
   }
 
   await sleep(DELAY_MS);
 
+  const makeId = MOBILE_DE_MAKE_IDS[target.marque];
   const paramObj = {
     sfmr: 'false',
     vc: 'Car',
-    searchText: target.searchDE,
     minPrice: target.minPrice,
     maxPrice: target.maxPrice,
     maxFirstRegistrationDate: `${bucket ? bucket.max : target.maxYear}-12-31`,
   };
   if (bucket) paramObj.minFirstRegistrationDate = `${bucket.min}-01-01`;
+
+  // makeId filtre la marque côté serveur (ex: BMW uniquement)
+  // searchText filtre le modèle en texte libre dans les résultats de cette marque
+  if (makeId) {
+    paramObj['makeModelVariant1.makeId'] = makeId;
+    const modelPart = target.searchDE.replace(target.marque, '').trim();
+    if (modelPart) paramObj.searchText = modelPart; // ex: "3er E36", "C-Klasse W202"
+  } else {
+    paramObj.searchText = target.searchDE;
+  }
+
   const params = new URLSearchParams(paramObj);
   const url = `https://suchen.mobile.de/fahrzeuge/search.html?${params}`;
 
@@ -49,10 +60,10 @@ export async function getRawPricesDE(target, bucket = null) {
     const markdown = result.markdown || '';
     const prices = markdown ? parsePrices(markdown, target) : [];
     setCached(cacheKey, prices);
-    console.log(`[Mobile.de] ${target.searchDE} → ${prices.length} prix scrapés`);
+    console.log(`[Mobile.de] ${target.modele} → ${prices.length} prix scrapés (${url})`);
     return { prices, url };
   } catch (err) {
-    console.error(`[Mobile.de] Erreur ${target.searchDE}: ${err.message}`);
+    console.error(`[Mobile.de] Erreur ${target.modele}: ${err.message}`);
     return { prices: [], url };
   }
 }

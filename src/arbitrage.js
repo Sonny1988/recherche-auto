@@ -1,9 +1,11 @@
 import { THRESHOLDS, TARGET_YOUNGTIMERS } from './config.js';
 import { getRawPricesDE } from './scrapers/mobile-de.js';
 import { getRawPricesEbay } from './scrapers/ebay-kleinanzeigen.js';
+import { getRawPricesAS24 } from './scrapers/autoscout-de.js';
 
 function matchTarget(annonce) {
   const titre = annonce.titre?.toLowerCase() || '';
+  // Correspondance précise : marque + au moins un mot-clé du modèle ou searchFR
   return TARGET_YOUNGTIMERS.find(t => {
     const marque = t.marque.toLowerCase();
     const modele = t.modele.toLowerCase();
@@ -11,7 +13,8 @@ function matchTarget(annonce) {
       titre.includes(modele.split(' ')[0]) ||
       titre.includes(t.searchFR.toLowerCase().split(' ').pop())
     );
-  }) || TARGET_YOUNGTIMERS.find(t => titre.includes(t.marque.toLowerCase())) || null;
+  }) || null;
+  // Pas de fallback par marque seule — risque de comparer E30 avec prix E39
 }
 
 function median(arr) {
@@ -66,12 +69,17 @@ async function getPricesForTarget(target, annee) {
   const key = `${target.searchDE}|${bucket ? `${bucket.min}-${bucket.max}` : 'all'}`;
   if (_priceCache.has(key)) return _priceCache.get(key);
 
-  const [{ prices: mobile, url: urlMobile }, { prices: ebay, url: urlEbay }] = await Promise.all([
+  const [
+    { prices: mobile, url: urlMobile },
+    { prices: ebay, url: urlEbay },
+    { prices: as24, url: urlAS24 },
+  ] = await Promise.all([
     getRawPricesDE(target, bucket),
     getRawPricesEbay(target, bucket),
+    getRawPricesAS24(target, bucket),
   ]);
 
-  const result = { mobile, ebay, urlMobile, urlEbay };
+  const result = { mobile, ebay, as24, urlMobile, urlEbay, urlAS24 };
   _priceCache.set(key, result);
   return result;
 }
@@ -87,20 +95,26 @@ export async function analyzeArbitrage(annonces) {
     const target = annonce._target || matchTarget(annonce);
     if (!target) continue;
 
-    const { mobile, ebay, urlMobile, urlEbay } = await getPricesForTarget(target, annonce.annee);
+    const { mobile, ebay, as24, urlMobile, urlEbay, urlAS24 } = await getPricesForTarget(target, annonce.annee);
 
     // Médiane par tranche pour chaque source
-    const { med: medMobile } = medianForPrice(mobile, annonce.prix_fr, target);
+    const { med: medMobile, count: countMobile } = medianForPrice(mobile, annonce.prix_fr, target);
     const { med: medEbay, count: countEbay } = medianForPrice(ebay, annonce.prix_fr, target);
+    const { med: medAS24, count: countAS24 } = medianForPrice(as24, annonce.prix_fr, target);
 
-    // Prendre la plus haute médiane comme référence de revente
-    const prixDE = Math.max(medMobile || 0, medEbay || 0) || null;
+    // Prendre la médiane la plus haute parmi les 3 sources comme référence de revente
+    const sources = [
+      { med: medMobile || 0, count: countMobile, url: urlMobile, platform: 'Mobile.de' },
+      { med: medEbay || 0, count: countEbay, url: urlEbay, platform: 'eBay Kleinanzeigen' },
+      { med: medAS24 || 0, count: countAS24, url: urlAS24, platform: 'AutoScout24.de' },
+    ];
+    const best = sources.reduce((a, b) => b.med > a.med ? b : a);
+    const prixDE = best.med || null;
     if (!prixDE) continue;
 
-    const isEbayBetter = (medEbay || 0) >= (medMobile || 0);
-    const refUrl = isEbayBetter ? urlEbay : urlMobile;
-    const refCount = isEbayBetter ? countEbay : medianForPrice(mobile, annonce.prix_fr, target).count;
-    const refPlatform = isEbayBetter ? 'eBay Kleinanzeigen' : 'Mobile.de';
+    const refUrl = best.url;
+    const refCount = best.count;
+    const refPlatform = best.platform;
 
     const score = calcScore(annonce.prix_fr, prixDE);
     if (!score) continue;

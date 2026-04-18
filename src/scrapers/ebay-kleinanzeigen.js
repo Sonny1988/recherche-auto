@@ -45,12 +45,13 @@ export async function getRawPricesEbay(target, bucket = null) {
 
   await sleep(DELAY_MS);
 
-  const slug = encodeURIComponent(target.searchDE.toLowerCase().replace(/\s+/g, '-'));
-  // eBay Kleinanzeigen supporte les filtres année via paramètres URL
+  // Format Kleinanzeigen : /s-{mots-clés-tirets}/k0c216 — le slug est le terme de recherche,
+  // pas une localisation. /s-autos/{slug}/ mettrait le slug en position ville → liste hors sujet.
+  const slug = target.searchDE.toLowerCase().replace(/\s+/g, '-');
   const yearParams = bucket
     ? `?minbaujahr=${bucket.min}&maxbaujahr=${bucket.max}`
     : '';
-  const url = `https://www.kleinanzeigen.de/s-autos/${slug}/k0c216${yearParams}`;
+  const url = `https://www.kleinanzeigen.de/s-${slug}/k0c216${yearParams}`;
 
   try {
     const result = await fc.scrape(url, {
