@@ -1,840 +1,277 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Arbitrage Youngtimers FR→DE — 18 avr. 2026</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
-  <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Arbitrage Youngtimers FR→DE</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0d0d11;--card:#16161d;--hover:#1e1e28;
+  --b0:#252530;--b1:#35354a;
+  --txt:#e8e8f0;--dim:#6b6b80;
+  --green:#22c55e;--gdim:rgba(34,197,94,.13);
+  --amber:#f59e0b;--adim:rgba(245,158,11,.13);
+  --blue:#3b82f6;--bdim:rgba(59,130,246,.13);
+  --mono:'JetBrains Mono',monospace;
+  --sans:'Inter',sans-serif;
+}
+html{-webkit-text-size-adjust:100%}
+body{font-family:var(--sans);background:var(--bg);color:var(--txt);min-height:100dvh;padding:16px 14px 80px}
 
-    :root {
-      --bg: #0d0d11;
-      --bg-card: #16161d;
-      --bg-hover: #1e1e28;
-      --border: #252530;
-      --border-hover: #35354a;
-      --text: #e8e8f0;
-      --muted: #6b6b80;
-      --green: #22c55e;
-      --green-dim: rgba(34,197,94,0.12);
-      --amber: #f59e0b;
-      --amber-dim: rgba(245,158,11,0.12);
-      --blue: #3b82f6;
-      --blue-dim: rgba(59,130,246,0.12);
-      --gray-dim: rgba(107,107,128,0.10);
-      --mono: 'JetBrains Mono', monospace;
-      --sans: 'Inter', sans-serif;
-    }
+/* HEADER */
+.hdr{margin-bottom:20px}
+.hdr h1{font-size:1.15rem;font-weight:700;letter-spacing:-.02em}
+.hdr h1 span{color:var(--dim)}
+.hdr p{font-family:var(--mono);font-size:.65rem;color:var(--dim);margin-top:3px;line-height:1.5}
+.pulse{display:inline-flex;align-items:center;gap:4px;font-family:var(--mono);font-size:.6rem;font-weight:600;
+  padding:2px 7px;border-radius:4px;background:rgba(34,197,94,.12);color:var(--green);
+  border:1px solid rgba(34,197,94,.22);margin-top:6px;letter-spacing:.04em}
 
-    body {
-      font-family: var(--sans);
-      background: var(--bg);
-      color: var(--text);
-      min-height: 100vh;
-      padding: 24px 20px 60px;
-    }
+/* KPIS */
+.kpis{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px}
+.kpi{background:var(--card);border:1px solid var(--b0);border-radius:10px;padding:12px 14px}
+.kpi-lbl{font-size:.6rem;color:var(--dim);text-transform:uppercase;letter-spacing:.07em;font-weight:600;margin-bottom:5px}
+.kpi-val{font-family:var(--mono);font-size:1.35rem;font-weight:700;line-height:1;color:var(--txt)}
+.kpi-val.g{color:var(--green)}.kpi-val.a{color:var(--amber)}
+.kpi-sub{font-family:var(--mono);font-size:.58rem;color:var(--dim);margin-top:3px}
 
-    /* ── HEADER ── */
-    .header {
-      display: flex;
-      align-items: flex-start;
-      justify-content: space-between;
-      margin-bottom: 32px;
-      flex-wrap: wrap;
-      gap: 12px;
-    }
-    .header-title {
-      font-size: 1.25rem;
-      font-weight: 600;
-      letter-spacing: -0.02em;
-      color: var(--text);
-    }
-    .header-sub {
-      font-family: var(--mono);
-      font-size: 0.72rem;
-      color: var(--muted);
-      margin-top: 4px;
-    }
-    .badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 5px;
-      font-family: var(--mono);
-      font-size: 0.65rem;
-      font-weight: 600;
-      padding: 3px 8px;
-      border-radius: 4px;
-      letter-spacing: 0.04em;
-      text-transform: uppercase;
-    }
-    .badge-live { background: rgba(34,197,94,0.15); color: var(--green); border: 1px solid rgba(34,197,94,0.25); }
+/* FILTERS */
+.filters{margin-bottom:14px;display:flex;flex-direction:column;gap:8px}
+.frow{display:flex;gap:6px;overflow-x:auto;-webkit-overflow-scrolling:touch;padding-bottom:2px;scrollbar-width:none}
+.frow::-webkit-scrollbar{display:none}
+.flbl{font-size:.6rem;color:var(--dim);text-transform:uppercase;letter-spacing:.07em;font-weight:600;
+  white-space:nowrap;padding-top:2px;flex-shrink:0;align-self:center}
+.fb{font-family:var(--sans);font-size:.72rem;font-weight:500;
+  padding:8px 12px;border-radius:8px;border:1px solid var(--b0);
+  background:var(--card);color:var(--dim);cursor:pointer;
+  white-space:nowrap;flex-shrink:0;-webkit-tap-highlight-color:transparent;
+  transition:all .15s;min-height:36px;display:flex;align-items:center}
+.fb:active{opacity:.7}
+.fb.on{border-color:var(--amber);color:var(--amber);background:var(--adim)}
 
-    /* ── KPIs ── */
-    .kpis {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-      gap: 10px;
-      margin-bottom: 24px;
-    }
-    .kpi {
-      background: var(--bg-card);
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 14px 16px;
-    }
-    .kpi-label {
-      font-size: 0.68rem;
-      color: var(--muted);
-      text-transform: uppercase;
-      letter-spacing: 0.06em;
-      font-weight: 500;
-      margin-bottom: 6px;
-    }
-    .kpi-value {
-      font-family: var(--mono);
-      font-size: 1.5rem;
-      font-weight: 600;
-      color: var(--text);
-      line-height: 1;
-    }
-    .kpi-value.green { color: var(--green); }
-    .kpi-value.amber { color: var(--amber); }
-    .kpi-sub {
-      font-family: var(--mono);
-      font-size: 0.65rem;
-      color: var(--muted);
-      margin-top: 4px;
-    }
+/* PROFIT STEPS */
+.profit-steps{display:flex;gap:6px;overflow-x:auto;-webkit-overflow-scrolling:touch;padding-bottom:2px;scrollbar-width:none}
+.profit-steps::-webkit-scrollbar{display:none}
+.ps{font-family:var(--mono);font-size:.65rem;font-weight:600;
+  padding:7px 10px;border-radius:7px;border:1px solid var(--b0);
+  background:var(--card);color:var(--dim);cursor:pointer;
+  white-space:nowrap;flex-shrink:0;-webkit-tap-highlight-color:transparent;
+  transition:all .15s;min-height:34px;display:flex;align-items:center}
+.ps:active{opacity:.7}
+.ps.on{border-color:var(--green);color:var(--green);background:var(--gdim)}
 
-    /* ── FILTERS ── */
-    .filters {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      margin-bottom: 20px;
-      align-items: center;
-    }
-    .filter-label {
-      font-size: 0.68rem;
-      color: var(--muted);
-      text-transform: uppercase;
-      letter-spacing: 0.06em;
-      font-weight: 500;
-      margin-right: 4px;
-    }
-    .filter-btn {
-      font-family: var(--sans);
-      font-size: 0.72rem;
-      font-weight: 500;
-      padding: 5px 10px;
-      border-radius: 5px;
-      border: 1px solid var(--border);
-      background: var(--bg-card);
-      color: var(--muted);
-      cursor: pointer;
-      transition: all 0.15s;
-      user-select: none;
-    }
-    .filter-btn:hover { border-color: var(--border-hover); color: var(--text); background: var(--bg-hover); }
-    .filter-btn.active { border-color: var(--amber); color: var(--amber); background: var(--amber-dim); }
-    .filter-divider { width: 1px; height: 20px; background: var(--border); margin: 0 4px; }
+/* META */
+.meta{font-family:var(--mono);font-size:.65rem;color:var(--dim);margin-bottom:10px}
+.meta b{color:var(--txt)}
 
-    /* Sliders */
-    .slider-wrap { display: flex; align-items: center; gap: 8px; }
-    .slider-wrap input[type=range] {
-      -webkit-appearance: none;
-      width: 110px;
-      height: 3px;
-      border-radius: 2px;
-      background: var(--border-hover);
-      outline: none;
-      cursor: pointer;
-    }
-    .slider-wrap input[type=range]::-webkit-slider-thumb {
-      -webkit-appearance: none;
-      width: 12px; height: 12px;
-      border-radius: 50%;
-      background: var(--amber);
-      cursor: pointer;
-    }
-    .slider-val {
-      font-family: var(--mono);
-      font-size: 0.68rem;
-      color: var(--amber);
-      min-width: 52px;
-    }
+/* GRID */
+.grid{display:grid;grid-template-columns:1fr;gap:10px}
+@media(min-width:640px){.grid{grid-template-columns:repeat(2,1fr)}}
+@media(min-width:1024px){.grid{grid-template-columns:repeat(3,1fr)}}
 
-    /* Number inputs */
-    .range-wrap { display: flex; align-items: center; gap: 6px; }
-    .range-input {
-      font-family: var(--mono);
-      font-size: 0.68rem;
-      color: var(--text);
-      background: var(--bg-card);
-      border: 1px solid var(--border);
-      border-radius: 4px;
-      padding: 3px 6px;
-      width: 72px;
-      outline: none;
-      transition: border-color 0.15s;
-      -moz-appearance: textfield;
-    }
-    .range-input::-webkit-outer-spin-button,
-    .range-input::-webkit-inner-spin-button { -webkit-appearance: none; }
-    .range-input:focus { border-color: var(--border-hover); }
-    .range-sep { font-family: var(--mono); font-size: 0.65rem; color: var(--muted); }
+/* CARD */
+.card{background:var(--card);border:1px solid var(--b0);border-radius:12px;
+  padding:14px;display:flex;flex-direction:column;gap:11px}
+.card.exc{border-color:rgba(34,197,94,.4);box-shadow:0 0 14px rgba(34,197,94,.07)}
+.card.xlt{border-color:rgba(59,130,246,.35)}
+.card.bon{border-color:rgba(107,107,128,.3)}
 
-    /* ── RESULTS META ── */
-    .results-meta {
-      font-size: 0.72rem;
-      color: var(--muted);
-      margin-bottom: 14px;
-      font-family: var(--mono);
-    }
-    .results-meta span { color: var(--text); }
+.card-top{display:flex;justify-content:space-between;align-items:flex-start;gap:8px}
+.card-title{font-size:.82rem;font-weight:600;line-height:1.4;flex:1}
+.sbadge{font-size:.58rem;font-weight:700;padding:3px 7px;border-radius:5px;white-space:nowrap;flex-shrink:0}
+.s-exc{background:var(--gdim);color:var(--green);border:1px solid rgba(34,197,94,.25)}
+.s-xlt{background:var(--bdim);color:var(--blue);border:1px solid rgba(59,130,246,.25)}
+.s-bon{background:rgba(107,107,128,.1);color:#94a3b8;border:1px solid rgba(107,107,128,.25)}
+.s-int{background:var(--adim);color:var(--amber);border:1px solid rgba(245,158,11,.25)}
+.s-fbl{background:rgba(107,107,128,.07);color:var(--dim);border:1px solid var(--b0)}
 
-    /* ── GRID ── */
-    .grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
-      gap: 10px;
-    }
+/* PRICES ROW */
+.prices{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;
+  background:rgba(255,255,255,.025);border-radius:8px;padding:10px}
+.pb{display:flex;flex-direction:column;gap:3px}
+.plbl{font-size:.55rem;color:var(--dim);text-transform:uppercase;letter-spacing:.07em;font-weight:600}
+.pval{font-family:var(--mono);font-size:.85rem;font-weight:700;color:var(--txt)}
+.pval.pg{color:var(--green);font-size:.95rem}
+.pval.pa{color:var(--amber);font-size:.95rem}
 
-    /* ── CARD ── */
-    .card {
-      background: var(--bg-card);
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 14px 16px;
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-      transition: border-color 0.15s, background 0.15s;
-      position: relative;
-    }
-    .card:hover { border-color: var(--border-hover); background: var(--bg-hover); }
-    .card.exceptional { border-color: rgba(34,197,94,0.35); box-shadow: 0 0 12px rgba(34,197,94,0.08); }
-    .card.excellent { border-color: rgba(59,130,246,0.30); }
-    .card.bon { border-color: rgba(107,107,128,0.30); }
+/* TAGS */
+.tags{display:flex;flex-wrap:wrap;gap:5px;align-items:center}
+.tag{font-size:.6rem;color:var(--dim);background:rgba(255,255,255,.04);
+  border:1px solid var(--b0);border-radius:4px;padding:2px 6px;
+  font-family:var(--mono);white-space:nowrap}
+.dpill{font-family:var(--mono);font-size:.6rem;font-weight:700;padding:2px 7px;
+  border-radius:4px;background:var(--gdim);color:var(--green);
+  border:1px solid rgba(34,197,94,.2);white-space:nowrap}
 
-    .card-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; }
-    .card-title {
-      font-size: 0.82rem;
-      font-weight: 600;
-      line-height: 1.35;
-      color: var(--text);
-      flex: 1;
-    }
-    .score-badge {
-      font-size: 0.65rem;
-      font-weight: 600;
-      padding: 2px 7px;
-      border-radius: 4px;
-      white-space: nowrap;
-      letter-spacing: 0.02em;
-    }
-    .score-exceptional { background: var(--green-dim); color: var(--green); border: 1px solid rgba(34,197,94,0.25); }
-    .score-excellent { background: var(--blue-dim); color: var(--blue); border: 1px solid rgba(59,130,246,0.25); }
-    .score-bon { background: var(--gray-dim); color: #94a3b8; border: 1px solid rgba(107,107,128,0.25); }
-    .score-interessant { background: var(--amber-dim); color: var(--amber); border: 1px solid rgba(245,158,11,0.25); }
-    .score-faible { background: rgba(107,107,128,0.08); color: var(--muted); border: 1px solid var(--border); }
+/* FOOTER */
+.cfoot{display:flex;align-items:center;justify-content:space-between;gap:6px}
+.platag{font-size:.6rem;color:var(--dim);font-family:var(--mono);
+  display:flex;align-items:center;gap:4px}
+.dot{width:6px;height:6px;border-radius:50%;display:inline-block;flex-shrink:0}
+.lbc{background:#f97316}.les{background:#8b5cf6}.asc{background:#06b6d4}
 
-    .card-prices {
-      display: grid;
-      grid-template-columns: 1fr 1fr 1fr;
-      gap: 6px;
-    }
-    .price-block { display: flex; flex-direction: column; gap: 2px; }
-    .price-label { font-size: 0.6rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; font-weight: 500; }
-    .price-val {
-      font-family: var(--mono);
-      font-size: 0.88rem;
-      font-weight: 600;
-      color: var(--text);
-    }
-    .price-val.profit-green { color: var(--green); font-size: 1rem; }
-    .price-val.profit-amber { color: var(--amber); font-size: 1rem; }
+.links{display:flex;gap:5px}
+.clink{font-size:.68rem;font-weight:600;text-decoration:none;
+  display:inline-flex;align-items:center;gap:3px;
+  padding:7px 10px;border-radius:7px;-webkit-tap-highlight-color:transparent;
+  min-height:36px;transition:all .15s}
+.clink:active{opacity:.7}
+.lkfr{color:var(--amber);border:1px solid rgba(245,158,11,.25);background:var(--adim)}
+.lkde{color:#60a5fa;border:1px solid rgba(96,165,250,.25);background:rgba(96,165,250,.08)}
+.clink svg{width:10px;height:10px;flex-shrink:0}
 
-    .card-meta {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 6px;
-      align-items: center;
-    }
-    .meta-tag {
-      font-size: 0.62rem;
-      color: var(--muted);
-      background: rgba(255,255,255,0.04);
-      border: 1px solid var(--border);
-      border-radius: 3px;
-      padding: 1px 5px;
-      font-family: var(--mono);
-    }
-
-    .card-footer {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 8px;
-    }
-    .plat-tag {
-      font-size: 0.62rem;
-      color: var(--muted);
-      font-family: var(--mono);
-      display: flex;
-      align-items: center;
-      gap: 4px;
-    }
-    .plat-dot { width: 5px; height: 5px; border-radius: 50%; display: inline-block; }
-    .plat-lbc { background: #f97316; }
-    .plat-les { background: #8b5cf6; }
-    .plat-as { background: #06b6d4; }
-
-    .card-link {
-      font-size: 0.68rem;
-      font-weight: 500;
-      color: var(--amber);
-      text-decoration: none;
-      display: inline-flex;
-      align-items: center;
-      gap: 4px;
-      padding: 3px 8px;
-      border: 1px solid rgba(245,158,11,0.25);
-      border-radius: 4px;
-      background: var(--amber-dim);
-      transition: all 0.15s;
-    }
-    .card-link:hover { background: rgba(245,158,11,0.2); border-color: rgba(245,158,11,0.4); }
-    .card-link svg { width: 10px; height: 10px; }
-    .card-link-de { color: #60a5fa; border-color: rgba(96,165,250,0.25); background: rgba(96,165,250,0.08); }
-    .card-link-de:hover { background: rgba(96,165,250,0.15); border-color: rgba(96,165,250,0.4); }
-
-    /* ── DELTA pill ── */
-    .delta-pill {
-      font-family: var(--mono);
-      font-size: 0.65rem;
-      font-weight: 600;
-      padding: 1px 6px;
-      border-radius: 3px;
-      background: var(--green-dim);
-      color: var(--green);
-      border: 1px solid rgba(34,197,94,0.2);
-    }
-
-    /* ── EMPTY ── */
-    .empty { text-align: center; padding: 60px 20px; color: var(--muted); font-size: 0.85rem; }
-
-    /* ── SEPARATOR ── */
-    .section-sep {
-      font-size: 0.65rem;
-      color: var(--muted);
-      text-transform: uppercase;
-      letter-spacing: 0.1em;
-      font-weight: 600;
-      margin: 20px 0 10px;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-    .section-sep::after { content: ''; flex: 1; height: 1px; background: var(--border); }
-
-    /* ── LANG SWITCHER ── */
-    .lang-switcher {
-      display: inline-flex;
-      border: 1px solid var(--border);
-      border-radius: 5px;
-      overflow: hidden;
-    }
-    .lang-btn {
-      font-family: var(--mono);
-      font-size: 0.65rem;
-      font-weight: 600;
-      padding: 4px 9px;
-      background: var(--bg-card);
-      color: var(--muted);
-      border: none;
-      cursor: pointer;
-      transition: all 0.15s;
-      letter-spacing: 0.04em;
-    }
-    .lang-btn + .lang-btn { border-left: 1px solid var(--border); }
-    .lang-btn.active { background: var(--bg-hover); color: var(--text); }
-    .lang-btn:hover:not(.active) { color: var(--text); }
-
-    /* ── SCAN BUTTON ── */
-    .scan-btn {
-      font-family: var(--sans);
-      font-size: 0.75rem;
-      font-weight: 600;
-      padding: 6px 14px;
-      border-radius: 5px;
-      border: 1px solid rgba(245,158,11,0.4);
-      background: var(--amber-dim);
-      color: var(--amber);
-      cursor: pointer;
-      transition: all 0.15s;
-      white-space: nowrap;
-    }
-    .scan-btn:hover:not(:disabled) { background: rgba(245,158,11,0.22); border-color: rgba(245,158,11,0.65); }
-    .scan-btn:disabled { opacity: 0.45; cursor: not-allowed; }
-    .scan-btn.running {
-      color: var(--green); border-color: rgba(34,197,94,0.4); background: var(--green-dim);
-      animation: pulse-scan 1.4s ease-in-out infinite;
-    }
-    @keyframes pulse-scan { 0%,100%{opacity:1} 50%{opacity:0.55} }
-
-    /* ── LOG PANEL ── */
-    .log-panel {
-      background: #0a0a0d;
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      margin-bottom: 20px;
-      overflow: hidden;
-    }
-    .log-header {
-      display: flex; align-items: center; justify-content: space-between;
-      padding: 8px 14px; border-bottom: 1px solid var(--border); background: var(--bg-card);
-    }
-    .log-header-title {
-      font-family: var(--mono); font-size: 0.68rem; color: var(--muted);
-      letter-spacing: 0.05em; text-transform: uppercase;
-    }
-    .log-close {
-      background: none; border: none; color: var(--muted); cursor: pointer;
-      font-size: 1rem; line-height: 1; padding: 0 2px; transition: color 0.12s;
-    }
-    .log-close:hover { color: var(--text); }
-    .log-content {
-      font-family: var(--mono); font-size: 0.7rem; line-height: 1.6;
-      padding: 10px 14px; max-height: 220px; overflow-y: auto; color: var(--muted);
-    }
-    .log-content::-webkit-scrollbar { width: 4px; }
-    .log-content::-webkit-scrollbar-thumb { background: var(--border-hover); border-radius: 2px; }
-    .log-line-log { color: #c8c8d8; }
-    .log-line-err { color: #f87171; }
-    .log-line-done { color: var(--green); font-weight: 600; margin-top: 4px; }
-
-    @media (max-width: 600px) {
-      .grid { grid-template-columns: 1fr; }
-      .kpis { grid-template-columns: repeat(2, 1fr); }
-      body { padding: 16px 12px 40px; }
-    }
-  </style>
+.empty{text-align:center;padding:50px 20px;color:var(--dim);font-size:.85rem}
+</style>
 </head>
 <body>
 
-<div class="header">
-  <div>
-    <div class="header-title">Arbitrage Youngtimers <span style="color:var(--muted)">FR→DE</span></div>
-    <div class="header-sub">Scan du 18 avr. 2026 · Mobile.de + eBay Kleinanzeigen · Frais export 1 350€ inclus</div>
+<div class="hdr">
+  <h1>Arbitrage Youngtimers <span>FR→DE</span></h1>
+  <p>Scan du 18 avr. 2026 · Mobile.de + eBay KA · Frais export 1 350€</p>
+  <div class="pulse">● Mis à jour 18 avr. 2026</div>
+</div>
+
+<div class="kpis">
+  <div class="kpi">
+    <div class="kpi-lbl">Opportunités</div>
+    <div class="kpi-val">27</div>
+    <div class="kpi-sub">deals trouvés</div>
   </div>
-  <div style="display:flex;align-items:center;gap:10px">
-    <div class="lang-switcher">
-      <button class="lang-btn active" onclick="setLang('fr',this)">FR</button>
-      <button class="lang-btn" onclick="setLang('en',this)">EN</button>
-      <button class="lang-btn" onclick="setLang('de',this)">DE</button>
-    </div>
-    <div class="badge badge-live">● Live Airtable</div>
+  <div class="kpi">
+    <div class="kpi-lbl">Meilleur profit</div>
+    <div class="kpi-val a">21 855 €</div>
+    <div class="kpi-sub">brut max</div>
+  </div>
+  <div class="kpi">
+    <div class="kpi-lbl">Profit moyen</div>
+    <div class="kpi-val g">5 848 €</div>
+    <div class="kpi-sub">par deal</div>
+  </div>
+  <div class="kpi">
+    <div class="kpi-lbl">🔥 Exceptionnels</div>
+    <div class="kpi-val">6</div>
+    <div class="kpi-sub">profit ≥ 8 000€</div>
   </div>
 </div>
 
-<!-- KPIs -->
-<div class="kpis" id="kpis"></div>
-
-<!-- FILTERS -->
 <div class="filters">
-  <span class="filter-label" data-i18n="score">Score</span>
-  <button class="filter-btn active" data-score="all" onclick="setScore('all',this)" data-i18n="all">Tous</button>
-  <button class="filter-btn" data-score="🔥 Exceptionnel" onclick="setScore('🔥 Exceptionnel',this)">🔥 Exceptionnel</button>
-  <button class="filter-btn" data-score="⭐ Excellent" onclick="setScore('⭐ Excellent',this)">⭐ Excellent</button>
-  <button class="filter-btn" data-score="✅ Bon" onclick="setScore('✅ Bon',this)" data-i18n="bon">✅ Bon</button>
-  <button class="filter-btn" data-score="👍 Intéressant" onclick="setScore('👍 Intéressant',this)" data-i18n="interessant">👍 Intéressant</button>
-  <div class="filter-divider"></div>
-  <span class="filter-label" data-i18n="brand">Marque</span>
-  <button class="filter-btn active" data-marque="all" onclick="setMarque('all',this)" data-i18n="allBrands">Toutes</button>
-  <button class="filter-btn" data-marque="BMW" onclick="setMarque('BMW',this)">BMW</button>
-  <button class="filter-btn" data-marque="Porsche" onclick="setMarque('Porsche',this)">Porsche</button>
-  <button class="filter-btn" data-marque="Mercedes" onclick="setMarque('Mercedes',this)">Mercedes</button>
-  <button class="filter-btn" data-marque="Audi" onclick="setMarque('Audi',this)">Audi</button>
-  <button class="filter-btn" data-marque="Volkswagen" onclick="setMarque('Volkswagen',this)">VW</button>
-  <div class="filter-divider"></div>
-  <div class="slider-wrap">
-    <span class="filter-label" data-i18n="profitMin">Profit min</span>
-    <input type="range" id="profitSlider" min="0" max="22000" step="500" value="0" oninput="setProfitMin(this.value)">
-    <span class="slider-val" id="profitVal">0€</span>
+  <div class="frow">
+    <span class="flbl">Score</span>
+    <button class="fb on" data-score="all" onclick="setScore('all',this)">Tous</button>
+    <button class="fb" data-score="🔥 Exceptionnel" onclick="setScore('🔥 Exceptionnel',this)">🔥 Exceptionnel</button>
+    <button class="fb" data-score="⭐ Excellent" onclick="setScore('⭐ Excellent',this)">⭐ Excellent</button>
+    <button class="fb" data-score="✅ Bon" onclick="setScore('✅ Bon',this)">✅ Bon</button>
+    <button class="fb" data-score="👍 Intéressant" onclick="setScore('👍 Intéressant',this)">👍 Intéressant</button>
   </div>
-  <div class="filter-divider"></div>
-  <span class="filter-label" data-i18n="priceFR">Prix FR</span>
-  <div class="range-wrap">
-    <input class="range-input" type="number" id="prixMin" placeholder="Min €" oninput="renderGrid()">
-    <span class="range-sep">–</span>
-    <input class="range-input" type="number" id="prixMax" placeholder="Max €" oninput="renderGrid()">
+  <div class="frow">
+    <span class="flbl">Marque</span>
+    <button class="fb on" data-marque="all" onclick="setMarque('all',this)">Toutes</button>
+    <button class="fb" data-marque="BMW" onclick="setMarque('BMW',this)">BMW</button>
+    <button class="fb" data-marque="Porsche" onclick="setMarque('Porsche',this)">Porsche</button>
+    <button class="fb" data-marque="Mercedes" onclick="setMarque('Mercedes',this)">Mercedes</button>
+    <button class="fb" data-marque="Audi" onclick="setMarque('Audi',this)">Audi</button>
+    <button class="fb" data-marque="VW" onclick="setMarque('VW',this)">VW</button>
   </div>
-  <div class="filter-divider"></div>
-  <span class="filter-label" data-i18n="year">Année</span>
-  <div class="range-wrap">
-    <input class="range-input" type="number" id="anneeMin" data-i18n-ph="from" placeholder="De" min="1960" max="2010" oninput="renderGrid()">
-    <span class="range-sep">–</span>
-    <input class="range-input" type="number" id="anneeMax" data-i18n-ph="to" placeholder="À" min="1960" max="2010" oninput="renderGrid()">
+  <div class="frow">
+    <span class="flbl">Profit min</span>
+    <div class="profit-steps">
+      <button class="ps on" data-p="0" onclick="setProfit(0,this)">Tous</button>
+      <button class="ps" data-p="2000" onclick="setProfit(2000,this)">2 000€+</button>
+      <button class="ps" data-p="5000" onclick="setProfit(5000,this)">5 000€+</button>
+      <button class="ps" data-p="8000" onclick="setProfit(8000,this)">8 000€+</button>
+      <button class="ps" data-p="12000" onclick="setProfit(12000,this)">12 000€+</button>
+    </div>
   </div>
-  <div class="filter-divider"></div>
-  <button class="scan-btn" id="scanBtn" onclick="launchScan()">⚡ Lancer le scan</button>
 </div>
 
-<div class="log-panel" id="logPanel" style="display:none">
-  <div class="log-header">
-    <span class="log-header-title">Console scan</span>
-    <button class="log-close" onclick="document.getElementById('logPanel').style.display='none'">✕</button>
-  </div>
-  <div class="log-content" id="logContent"></div>
-</div>
-
-<div class="results-meta" id="resultsMeta"></div>
+<div class="meta" id="meta"></div>
 <div class="grid" id="grid"></div>
 
 <script>
-// ── i18n ──
-const LANGS = {
-  fr: {
-    score: 'Score', brand: 'Marque', profitMin: 'Profit min', priceFR: 'Prix FR', year: 'Année',
-    all: 'Tous', allBrands: 'Toutes', bon: '✅ Bon', interessant: '👍 Intéressant',
-    from: 'De', to: 'À',
-    kpi_opps: 'Opportunités', kpi_opps_sub: 'deals détectés',
-    kpi_best: 'Meilleur Profit', kpi_best_sub: 'profit brut max',
-    kpi_avg: 'Profit Moyen', kpi_avg_sub: 'par opportunité',
-    kpi_exc: 'Exceptionnels 🔥', kpi_exc_sub: 'profit ≥ 8 000€',
-    kpi_fees: 'Frais Export', kpi_fees_sub: 'transport+immat+TÜV',
-    lbl_priceFR: 'Prix FR', lbl_priceDE: 'Réf DE', lbl_profit: 'Profit brut',
-    results: (n) => `<span>${n}</span> résultat${n!==1?'s':''} affiché${n!==1?'s':''}`,
-    empty: 'Aucun résultat pour ces filtres.',
-    annonce: '🇫🇷 Annonce', refDE: '🇩🇪 Réf DE',
-    headerSub: 'Scan du 18 avr. 2026 · Mobile.de + eBay Kleinanzeigen · Frais export 1 350€ inclus',
-  },
-  en: {
-    score: 'Score', brand: 'Brand', profitMin: 'Min profit', priceFR: 'FR price', year: 'Year',
-    all: 'All', allBrands: 'All', bon: '✅ Good', interessant: '👍 Interesting',
-    from: 'From', to: 'To',
-    kpi_opps: 'Opportunities', kpi_opps_sub: 'deals found',
-    kpi_best: 'Best Profit', kpi_best_sub: 'max gross profit',
-    kpi_avg: 'Avg Profit', kpi_avg_sub: 'per opportunity',
-    kpi_exc: 'Exceptional 🔥', kpi_exc_sub: 'profit ≥ €8,000',
-    kpi_fees: 'Export Costs', kpi_fees_sub: 'transport+reg+TÜV',
-    lbl_priceFR: 'FR Price', lbl_priceDE: 'DE Ref', lbl_profit: 'Gross profit',
-    results: (n) => `<span>${n}</span> result${n!==1?'s':''} shown`,
-    empty: 'No results for these filters.',
-    annonce: '🇫🇷 Listing', refDE: '🇩🇪 DE Ref',
-    headerSub: 'Scan Apr 18 2026 · Mobile.de + eBay Kleinanzeigen · €1,350 export costs included',
-  },
-  de: {
-    score: 'Bewertung', brand: 'Marke', profitMin: 'Min. Gewinn', priceFR: 'FR Preis', year: 'Jahr',
-    all: 'Alle', allBrands: 'Alle', bon: '✅ Gut', interessant: '👍 Interessant',
-    from: 'Von', to: 'Bis',
-    kpi_opps: 'Angebote', kpi_opps_sub: 'Deals gefunden',
-    kpi_best: 'Bester Gewinn', kpi_best_sub: 'max. Bruttogewinn',
-    kpi_avg: 'Ø Gewinn', kpi_avg_sub: 'pro Angebot',
-    kpi_exc: 'Ausnahme 🔥', kpi_exc_sub: 'Gewinn ≥ 8.000€',
-    kpi_fees: 'Exportkosten', kpi_fees_sub: 'Transport+Zulassung+TÜV',
-    lbl_priceFR: 'FR Preis', lbl_priceDE: 'DE Referenz', lbl_profit: 'Bruttogewinn',
-    results: (n) => `<span>${n}</span> Ergebnis${n!==1?'se':''} angezeigt`,
-    empty: 'Keine Ergebnisse für diese Filter.',
-    annonce: '🇫🇷 Inserat', refDE: '🇩🇪 DE Ref',
-    headerSub: 'Scan 18. Apr. 2026 · Mobile.de + eBay Kleinanzeigen · 1.350€ Exportkosten inkl.',
-  },
-};
+const RAW = [{"titre":"PORSCHE 911 CABRIOLET (997) - 2007","prix_fr":56490,"prix_de":79695,"profit":21855,"delta":41.1,"score":"🔥 Exceptionnel","annee":null,"km":75250,"carb":"Essence","lien":"https://www.lesanciennes.com/annonce/porsche-911-cabriolet-997-2007-a861770","lien_de":"https://www.kleinanzeigen.de/s-autos/porsche-911-993/k0c216","plateforme":"LesAnciennes","date":"2026-04-18"},{"titre":"2006 PORSCHE 911 997 Cabriolet 3.8i 355ch Carrera","prix_fr":65990,"prix_de":79695,"profit":12355,"delta":20.8,"score":"🔥 Exceptionnel","annee":null,"km":58000,"carb":"Essence","lien":"https://www.lesanciennes.com/annonce/2006-porsche-911-997-cabriolet-3-8i-355ch-carrera-a841830","lien_de":"https://www.kleinanzeigen.de/s-autos/porsche-911-993/k0c216","plateforme":"LesAnciennes","date":"2026-04-18"},{"titre":"BMW 525 e e28 - 1984","prix_fr":6500,"prix_de":18245,"profit":10395,"delta":180.7,"score":"🔥 Exceptionnel","annee":1984,"km":245000,"carb":"Essence","lien":"https://www.lesanciennes.com/annonce/bmw-525-e-e28-1984-a840059","lien_de":"https://www.kleinanzeigen.de/s-autos/bmw-3er-e30/k0c216","plateforme":"LesAnciennes","date":"2026-04-18"},{"titre":"Porsche 928 S 1986","prix_fr":11500,"prix_de":22900,"profit":10050,"delta":99.1,"score":"🔥 Exceptionnel","annee":1986,"km":125000,"carb":"Essence","lien":"https://www.leboncoin.fr/ad/voitures/3171169814","lien_de":"https://www.kleinanzeigen.de/s-autos/porsche-968/k0c216?minbaujahr=1983&maxbaujahr=1987","plateforme":"LeBonCoin","date":"2026-04-18"},{"titre":"Porsche 968 Cabriolet 1992","prix_fr":19900,"prix_de":30950,"profit":9700,"delta":55.5,"score":"🔥 Exceptionnel","annee":1992,"km":52000,"carb":"Essence","lien":"https://www.leboncoin.fr/ad/voitures/3170013915","lien_de":"https://www.kleinanzeigen.de/s-autos/porsche-968/k0c216?minbaujahr=1988&maxbaujahr=1992","plateforme":"LeBonCoin","date":"2026-04-18"},{"titre":"BMW 316 316 - 1981","prix_fr":8000,"prix_de":18245,"profit":8895,"delta":128.1,"score":"🔥 Exceptionnel","annee":1981,"km":121400,"carb":"Essence","lien":"https://www.lesanciennes.com/annonce/bmw-316-316-1981-a781926","lien_de":"https://www.kleinanzeigen.de/s-autos/bmw-3er-e30/k0c216","plateforme":"LesAnciennes","date":"2026-04-18"},{"titre":"BMW 700 Coupé - 1964","prix_fr":9870,"prix_de":18245,"profit":7025,"delta":84.9,"score":"⭐ Excellent","annee":1964,"km":9820,"carb":"Essence","lien":"https://www.lesanciennes.com/annonce/bmw-700-coupe-1964-a857424","lien_de":"https://www.kleinanzeigen.de/s-autos/bmw-3er-e30/k0c216","plateforme":"LesAnciennes","date":"2026-04-18"},{"titre":"1978 BMW R 60/7","prix_fr":2495,"prix_de":10000,"profit":6155,"delta":300.8,"score":"⭐ Excellent","annee":1978,"km":64000,"carb":"Essence","lien":"https://www.lesanciennes.com/annonce/1978-bmw-r-60-7-a860816","lien_de":"https://suchen.mobile.de/fahrzeuge/search.html?sfmr=false&vc=Car&searchText=BMW+3er+E36&minPrice=2000&maxPrice=20000&maxFirstRegistrationDate=1999-12-31","plateforme":"LesAnciennes","date":"2026-04-18"},{"titre":"MERCEDES 280 SLC 40000 km d'origine - 1978","prix_fr":9900,"prix_de":16990,"profit":5740,"delta":71.6,"score":"⭐ Excellent","annee":1978,"km":40000,"carb":"Essence","lien":"https://www.lesanciennes.com/annonce/mercedes-280-slc-40000-km-d-origine-1978-a861842","lien_de":"https://www.kleinanzeigen.de/s-autos/mercedes-sl-r129/k0c216?minbaujahr=1978&maxbaujahr=1982","plateforme":"LesAnciennes","date":"2026-04-18"},{"titre":"Mercedes-Benz SL 380","prix_fr":10000,"prix_de":16990,"profit":5640,"delta":69.9,"score":"⭐ Excellent","annee":1985,"km":209440,"carb":"Essence","lien":"https://www.autoscout24.fr/offres/mercedes-benz-sl-380-380sl-v8-bva-essence-c34bf521-48c5-42ba-bbb0-5db450690d35","lien_de":"https://www.kleinanzeigen.de/s-autos/mercedes-sl-r129/k0c216?minbaujahr=1983&maxbaujahr=1987","plateforme":"AutoScout24.fr","date":"2026-04-18"},{"titre":"MERCEDES 500 SL R129 - 1993","prix_fr":10200,"prix_de":16990,"profit":5440,"delta":66.6,"score":"⭐ Excellent","annee":1993,"km":186800,"carb":"Essence","lien":"https://www.lesanciennes.com/annonce/mercedes-500-sl-r129-1993-a861190","lien_de":"https://www.kleinanzeigen.de/s-autos/mercedes-sl-r129/k0c216?minbaujahr=1993&maxbaujahr=1997","plateforme":"LesAnciennes","date":"2026-04-18"},{"titre":"MERCEDES 200 D - 1981","prix_fr":3500,"prix_de":10000,"profit":5150,"delta":185.7,"score":"⭐ Excellent","annee":1981,"km":230000,"carb":"Diesel","lien":"https://www.lesanciennes.com/annonce/mercedes-200-d-1981-a843115","lien_de":"https://suchen.mobile.de/fahrzeuge/search.html?sfmr=false&vc=Car&searchText=Mercedes+W124&minPrice=2000&maxPrice=20000&maxFirstRegistrationDate=1997-12-31","plateforme":"LesAnciennes","date":"2026-04-18"},{"titre":"MERCEDES 500 SL 500 SL Roadster Bva - 2001","prix_fr":13500,"prix_de":19790,"profit":4940,"delta":46.6,"score":"✅ Bon","annee":2001,"km":196480,"carb":"Essence","lien":"https://www.lesanciennes.com/annonce/mercedes-500-sl-500-sl-roadster-bva-2001-a861265","lien_de":"https://www.kleinanzeigen.de/s-autos/mercedes-sl-r129/k0c216?minbaujahr=1998&maxbaujahr=2002","plateforme":"LesAnciennes","date":"2026-04-18"},{"titre":"MERCEDES SLK AMG 32 SLK AMG 32 - 2001","prix_fr":11000,"prix_de":16995,"profit":4645,"delta":54.5,"score":"✅ Bon","annee":2001,"km":153000,"carb":"Essence","lien":"https://www.lesanciennes.com/annonce/mercedes-slk-amg-32-slk-amg-32-2001-a851565","lien_de":"https://www.kleinanzeigen.de/s-autos/mercedes-sl-r129/k0c216?minbaujahr=1998&maxbaujahr=2002","plateforme":"LesAnciennes","date":"2026-04-18"},{"titre":"MERCEDES 380 SL R107 - 1985","prix_fr":12000,"prix_de":17950,"profit":4600,"delta":49.6,"score":"✅ Bon","annee":1985,"km":117200,"carb":"Essence","lien":"https://www.lesanciennes.com/annonce/mercedes-380-sl-r107-1985-a853855","lien_de":"https://www.kleinanzeigen.de/s-autos/mercedes-sl-r129/k0c216?minbaujahr=1983&maxbaujahr=1987","plateforme":"LesAnciennes","date":"2026-04-18"},{"titre":"MERCEDES 300 SL CABRIOLET - 1991","prix_fr":13500,"prix_de":18900,"profit":4050,"delta":40,"score":"✅ Bon","annee":1991,"km":247196,"carb":"Essence","lien":"https://www.lesanciennes.com/annonce/mercedes-300-sl-cabriolet-1991-a582598","lien_de":"https://www.kleinanzeigen.de/s-autos/mercedes-sl-r129/k0c216?minbaujahr=1988&maxbaujahr=1992","plateforme":"LesAnciennes","date":"2026-04-18"},{"titre":"Volkswagen Golf GTI Standard Model","prix_fr":6900,"prix_de":11990,"profit":3740,"delta":73.8,"score":"✅ Bon","annee":1988,"km":327601,"carb":"Essence","lien":"https://www.autoscout24.fr/offres/volkswagen-golf-gti-16-essence-noir-6ed6d51c-8807-4dfd-a374-9671e2e1c70a","lien_de":"https://www.kleinanzeigen.de/s-autos/vw-golf-2-gti/k0c216?minbaujahr=1988&maxbaujahr=1992","plateforme":"AutoScout24.fr","date":"2026-04-18"},{"titre":"Mercedes-Benz SL 500","prix_fr":18500,"prix_de":23490,"profit":3640,"delta":27,"score":"✅ Bon","annee":2001,"km":186200,"carb":"Essence","lien":"https://www.autoscout24.fr/offres/mercedes-benz-sl-500-500-roadster-7gtro-essence-gris-158e25bb-14b1-409a-9a5d-63ed9f416ffb","lien_de":"https://www.kleinanzeigen.de/s-autos/mercedes-sl-r129/k0c216?minbaujahr=1998&maxbaujahr=2002","plateforme":"AutoScout24.fr","date":"2026-04-18"},{"titre":"PORSCHE 944 S2 - 1990","prix_fr":16000,"prix_de":20944,"profit":3594,"delta":30.9,"score":"✅ Bon","annee":1990,"km":200705,"carb":"Essence","lien":"https://www.lesanciennes.com/annonce/porsche-944-s2-1990-a851065","lien_de":"https://www.kleinanzeigen.de/s-autos/porsche-944/k0c216?minbaujahr=1988&maxbaujahr=1992","plateforme":"LesAnciennes","date":"2026-04-18"},{"titre":"Volkswagen Golf GTI GTI","prix_fr":7500,"prix_de":12400,"profit":3550,"delta":65.3,"score":"✅ Bon","annee":1988,"km":286601,"carb":"Essence","lien":"https://www.autoscout24.fr/offres/volkswagen-golf-gti-16-essence-rouge-cb7af9c6-f808-4dda-aec7-d6cea4a5152b","lien_de":"https://www.kleinanzeigen.de/s-autos/vw-golf-2-gti/k0c216?minbaujahr=1988&maxbaujahr=1992","plateforme":"AutoScout24.fr","date":"2026-04-18"},{"titre":"Volkswagen Golf GTI Standard Model","prix_fr":8000,"prix_de":12400,"profit":3050,"delta":55,"score":"✅ Bon","annee":1988,"km":22866,"carb":"Essence","lien":"https://www.autoscout24.fr/offres/volkswagen-golf-gti-16-essence-rouge-4afea2f0-5008-4d49-b3ad-d9aabd4f0bac","lien_de":"https://www.kleinanzeigen.de/s-autos/vw-golf-2-gti/k0c216?minbaujahr=1988&maxbaujahr=1992","plateforme":"AutoScout24.fr","date":"2026-04-18"},{"titre":"MERCEDES Roadster R129 SL 320 Bva - 1994","prix_fr":15900,"prix_de":19900,"profit":2650,"delta":25.2,"score":"👍 Intéressant","annee":1994,"km":180900,"carb":"Essence","lien":"https://www.lesanciennes.com/annonce/mercedes-roadster-r129-sl-320-bva-1994-a861717","lien_de":"https://www.kleinanzeigen.de/s-autos/mercedes-sl-r129/k0c216?minbaujahr=1993&maxbaujahr=1997","plateforme":"LesAnciennes","date":"2026-04-18"},{"titre":"Mercedes-Benz SL 380","prix_fr":18000,"prix_de":21990,"profit":2640,"delta":22.2,"score":"👍 Intéressant","annee":1983,"km":234000,"carb":"Essence","lien":"https://www.autoscout24.fr/offres/mercedes-benz-sl-380-mercedes-benz-280-sl-1983-essence-rouge-4d7e9d41-aaa9-409c-9134-0dc11b77cfd6","lien_de":"https://www.kleinanzeigen.de/s-autos/mercedes-sl-r129/k0c216?minbaujahr=1983&maxbaujahr=1987","plateforme":"AutoScout24.fr","date":"2026-04-18"},{"titre":"Porsche 944 Coupe","prix_fr":18500,"prix_de":22444,"profit":2594,"delta":21.3,"score":"👍 Intéressant","annee":1987,"km":202100,"carb":"Essence","lien":"https://www.autoscout24.fr/offres/porsche-944-targa-1987-essence-blanc-11c10d22-d12b-4dfd-b55b-6af74d71cc24","lien_de":"https://www.kleinanzeigen.de/s-autos/porsche-944/k0c216?minbaujahr=1983&maxbaujahr=1987","plateforme":"AutoScout24.fr","date":"2026-04-18"},{"titre":"MERCEDES 320 sl 4 places Cabriolet - 1994","prix_fr":17500,"prix_de":21245,"profit":2395,"delta":21.4,"score":"👍 Intéressant","annee":1994,"km":167000,"carb":"Essence","lien":"https://www.lesanciennes.com/annonce/mercedes-320-sl-4-places-cabriolet-1994-a854111","lien_de":"https://www.kleinanzeigen.de/s-autos/mercedes-sl-r129/k0c216?minbaujahr=1993&maxbaujahr=1997","plateforme":"LesAnciennes","date":"2026-04-18"},{"titre":"MERCEDES 450 SL - 1980","prix_fr":6900,"prix_de":10000,"profit":1750,"delta":44.9,"score":"➡️ Faible","annee":1980,"km":253700,"carb":"Essence","lien":"https://www.lesanciennes.com/annonce/mercedes-450-sl-1980-a855119","lien_de":"https://suchen.mobile.de/fahrzeuge/search.html?sfmr=false&vc=Car&searchText=Mercedes+W124&minPrice=2000&maxPrice=20000&maxFirstRegistrationDate=1997-12-31","plateforme":"LesAnciennes","date":"2026-04-18"},{"titre":"VOLKSWAGEN Golf Luxe - 1977","prix_fr":7500,"prix_de":10500,"profit":1650,"delta":40,"score":"➡️ Faible","annee":1977,"km":24015,"carb":"Essence","lien":"https://www.lesanciennes.com/annonce/volkswagen-golf-luxe-1977-a838888","lien_de":"https://suchen.mobile.de/fahrzeuge/search.html?sfmr=false&vc=Car&searchText=VW+Golf+2+GTI&minPrice=3000&maxPrice=20000&maxFirstRegistrationDate=1992-12-31","plateforme":"LesAnciennes","date":"2026-04-18"}];
+let fScore='all', fMarque='all', fProfit=0;
 
-let currentLang = 'fr';
-function t(key) { return LANGS[currentLang][key] || LANGS.fr[key] || key; }
+const SVG='<svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M2 10L10 2M5 2h5v5"/></svg>';
 
-function setLang(lang, btn) {
-  currentLang = lang;
-  document.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
-  // update static data-i18n elements
-  document.querySelectorAll('[data-i18n]').forEach(el => {
-    const k = el.getAttribute('data-i18n');
-    if (t(k)) el.textContent = t(k);
-  });
-  document.querySelectorAll('[data-i18n-ph]').forEach(el => {
-    const k = el.getAttribute('data-i18n-ph');
-    if (t(k)) el.placeholder = t(k);
-  });
-  document.querySelector('.header-sub').textContent = t('headerSub');
-  renderKPIs();
-  renderGrid();
+function getMarque(t){
+  const s=t.toLowerCase();
+  if(s.includes('porsche'))return'Porsche';
+  if(s.includes('bmw'))return'BMW';
+  if(s.includes('mercedes'))return'Mercedes';
+  if(s.includes('audi'))return'Audi';
+  if(s.includes('volkswagen')||s.includes('vw')||s.includes('golf')||s.includes('corrado'))return'VW';
+  return'Autre';
+}
+function fmt(n){return n.toLocaleString('fr-FR')+' €';}
+function fmtKm(n){return n?n.toLocaleString('fr-FR')+' km':'—';}
+
+function scoreCard(s){
+  if(s.includes('Exceptionnel'))return'exc';
+  if(s.includes('Excellent'))return'xlt';
+  if(s.includes('Bon'))return'bon';
+  return'';
+}
+function scoreBadge(s){
+  if(s.includes('Exceptionnel'))return's-exc';
+  if(s.includes('Excellent'))return's-xlt';
+  if(s.includes('Bon'))return's-bon';
+  if(s.includes('Intéressant'))return's-int';
+  return's-fbl';
+}
+function platClass(p){
+  if(p==='LeBonCoin')return'lbc';
+  if(p==='LesAnciennes')return'les';
+  return'asc';
 }
 
-const RAW = [
-  { titre: "PORSCHE 911 Cabriolet 997 — 2007", prix_fr: 56490, prix_de: 79695, profit: 21855, delta: 41.1, score: "🔥 Exceptionnel", annee: 2007, km: 75250, carb: "Essence", lien: "https://www.lesanciennes.com/annonce/porsche-911-cabriolet-997-2007-a861770", lien_de: "https://www.kleinanzeigen.de/s-autos/porsche-911-993/k0c216", plateforme: "LesAnciennes" },
-  { titre: "Porsche 928 S — 1986", prix_fr: 11500, prix_de: 30950, profit: 18100, delta: 169.1, score: "🔥 Exceptionnel", annee: 1986, km: 125000, carb: "Essence", lien: "https://www.leboncoin.fr/ad/voitures/3171169814", lien_de: "https://www.kleinanzeigen.de/s-autos/porsche-968/k0c216", plateforme: "LeBonCoin" },
-  { titre: "Porsche 911 993 Cabriolet — 1996", prix_fr: 70000, prix_de: 86250, profit: 14900, delta: 23.2, score: "🔥 Exceptionnel", annee: 1996, km: 186000, carb: "Essence", lien: "https://www.leboncoin.fr/ad/voitures/3165824755", lien_de: "https://www.kleinanzeigen.de/s-autos/porsche-911-993/k0c216", plateforme: "LeBonCoin" },
-  { titre: "Porsche 911 997 Cabriolet 3.8i 355ch — 2006", prix_fr: 65990, prix_de: 79695, profit: 12355, delta: 20.8, score: "🔥 Exceptionnel", annee: 2006, km: 58000, carb: "Essence", lien: "https://www.lesanciennes.com/annonce/2006-porsche-911-997-cabriolet-3-8i-355ch-carrera-a841830", lien_de: "https://www.kleinanzeigen.de/s-autos/porsche-911-993/k0c216", plateforme: "LesAnciennes" },
-  { titre: "BMW 525e E28 — 1984", prix_fr: 6500, prix_de: 18245, profit: 10395, delta: 180.7, score: "🔥 Exceptionnel", annee: 1984, km: 245000, carb: "Essence", lien: "https://www.lesanciennes.com/annonce/bmw-525-e-e28-1984-a840059", lien_de: "https://www.kleinanzeigen.de/s-autos/bmw-3er-e30/k0c216", plateforme: "LesAnciennes" },
-  { titre: "Porsche 968 Cabriolet — 1992", prix_fr: 19900, prix_de: 30950, profit: 9700, delta: 55.5, score: "🔥 Exceptionnel", annee: 1992, km: 52000, carb: "Essence", lien: "https://www.leboncoin.fr/ad/voitures/3170013915", lien_de: "https://www.kleinanzeigen.de/s-autos/porsche-968/k0c216", plateforme: "LeBonCoin" },
-  { titre: "Mercedes 280 SLC 40k km d'origine — 1978", prix_fr: 9900, prix_de: 20200, profit: 8950, delta: 104, score: "🔥 Exceptionnel", annee: 1978, km: 40000, carb: "Essence", lien: "https://www.lesanciennes.com/annonce/mercedes-280-slc-40000-km-d-origine-1978-a861842", lien_de: "https://www.kleinanzeigen.de/s-autos/mercedes-sl-r129/k0c216", plateforme: "LesAnciennes" },
-  { titre: "BMW 316 E21 — 1981", prix_fr: 8000, prix_de: 18245, profit: 8895, delta: 128.1, score: "🔥 Exceptionnel", annee: 1981, km: 121400, carb: "Essence", lien: "https://www.lesanciennes.com/annonce/bmw-316-316-1981-a781926", lien_de: "https://www.kleinanzeigen.de/s-autos/bmw-3er-e30/k0c216", plateforme: "LesAnciennes" },
-  { titre: "BMW 700 Coupé — 1964", prix_fr: 9870, prix_de: 18245, profit: 7025, delta: 84.9, score: "⭐ Excellent", annee: 1964, km: 9820, carb: "Essence", lien: "https://www.lesanciennes.com/annonce/bmw-700-coupe-1964-a857424", lien_de: "https://www.kleinanzeigen.de/s-autos/bmw-3er-e30/k0c216", plateforme: "LesAnciennes" },
-  { titre: "Mercedes W124 — 1988", prix_fr: 2000, prix_de: 10000, profit: 6650, delta: 400, score: "⭐ Excellent", annee: 1988, km: 150000, carb: "Diesel", lien: "https://www.leboncoin.fr/ad/voitures/3180058709", lien_de: "https://suchen.mobile.de/fahrzeuge/search.html?sfmr=false&vc=Car&searchText=Mercedes+W124&minPrice=2000&maxPrice=20000&maxFirstRegistrationDate=1997-12-31", plateforme: "LeBonCoin" },
-  { titre: "Porsche 928 — 1983", prix_fr: 10990, prix_de: 18750, profit: 6410, delta: 70.6, score: "⭐ Excellent", annee: 1983, km: 141000, carb: "Essence", lien: "https://www.leboncoin.fr/ad/voitures/3177681506", lien_de: "https://suchen.mobile.de/fahrzeuge/search.html?sfmr=false&vc=Car&searchText=Porsche+928&minPrice=8000&maxPrice=50000&maxFirstRegistrationDate=1995-12-31", plateforme: "LeBonCoin" },
-  { titre: "BMW R 60/7 Moto — 1978", prix_fr: 2495, prix_de: 10000, profit: 6155, delta: 300.8, score: "⭐ Excellent", annee: 1978, km: 64000, carb: "Essence", lien: "https://www.lesanciennes.com/annonce/1978-bmw-r-60-7-a860816", lien_de: "https://suchen.mobile.de/fahrzeuge/search.html?sfmr=false&vc=Car&searchText=BMW+3er+E36&minPrice=2000&maxPrice=20000&maxFirstRegistrationDate=1999-12-31", plateforme: "LesAnciennes" },
-  { titre: "BMW 850i E31 — 1991", prix_fr: 15000, prix_de: 22500, profit: 6150, delta: 50, score: "⭐ Excellent", annee: 1991, km: 70000, carb: "Essence", lien: "https://www.leboncoin.fr/ad/voitures/3167189943", lien_de: "https://www.kleinanzeigen.de/s-autos/bmw-8er-e31/k0c216", plateforme: "LeBonCoin" },
-  { titre: "Mercedes E210 W210 — 2001", prix_fr: 2200, prix_de: 9000, profit: 5450, delta: 309.1, score: "⭐ Excellent", annee: 2001, km: 318000, carb: "Diesel", lien: "https://www.leboncoin.fr/ad/voitures/3177572074", lien_de: "https://suchen.mobile.de/fahrzeuge/search.html?sfmr=false&vc=Car&searchText=Mercedes+E-Klasse+W210&minPrice=2000&maxPrice=15000&maxFirstRegistrationDate=2002-12-31", plateforme: "LeBonCoin" },
-  { titre: "Mercedes 200D W123 — 1981", prix_fr: 3500, prix_de: 10000, profit: 5150, delta: 185.7, score: "⭐ Excellent", annee: 1981, km: 230000, carb: "Diesel", lien: "https://www.lesanciennes.com/annonce/mercedes-200-d-1981-a843115", lien_de: "https://suchen.mobile.de/fahrzeuge/search.html?sfmr=false&vc=Car&searchText=Mercedes+W124&minPrice=2000&maxPrice=20000&maxFirstRegistrationDate=1997-12-31", plateforme: "LesAnciennes" },
-  { titre: "BMW 5er E34 — 1995", prix_fr: 3200, prix_de: 9450, profit: 4900, delta: 195.3, score: "✅ Bon", annee: 1995, km: 399000, carb: "Diesel", lien: "https://www.leboncoin.fr/ad/voitures/3174537148", lien_de: "https://www.kleinanzeigen.de/s-autos/bmw-5er-e34/k0c216", plateforme: "LeBonCoin" },
-  { titre: "BMW 3er E36 — 1998", prix_fr: 3800, prix_de: 10000, profit: 4850, delta: 163.2, score: "✅ Bon", annee: 1998, km: 180000, carb: "Diesel", lien: "https://www.leboncoin.fr/ad/voitures/3177959640", lien_de: "https://suchen.mobile.de/fahrzeuge/search.html?sfmr=false&vc=Car&searchText=BMW+3er+E36&minPrice=2000&maxPrice=20000&maxFirstRegistrationDate=1999-12-31", plateforme: "LeBonCoin" },
-  { titre: "Audi 80 1.8S — 1991", prix_fr: 2000, prix_de: 7500, profit: 4150, delta: 275, score: "✅ Bon", annee: 1991, km: 120580, carb: "Essence", lien: "https://www.lesanciennes.com/annonce/audi-80-1-8s-1991-a853378", lien_de: "https://suchen.mobile.de/fahrzeuge/search.html?sfmr=false&vc=Car&searchText=Audi+80+B4&minPrice=2000&maxPrice=12000&maxFirstRegistrationDate=1996-12-31", plateforme: "LesAnciennes" },
-  { titre: "Mercedes 190E W201 — 1989", prix_fr: 4000, prix_de: 9000, profit: 3650, delta: 125, score: "✅ Bon", annee: 1989, km: 340000, carb: "Diesel", lien: "https://www.leboncoin.fr/ad/voitures/3180083553", lien_de: "https://suchen.mobile.de/fahrzeuge/search.html?sfmr=false&vc=Car&searchText=Mercedes+190E+W201&minPrice=2000&maxPrice=15000&maxFirstRegistrationDate=1993-12-31", plateforme: "LeBonCoin" },
-  { titre: "Porsche 944 S2 — 1990", prix_fr: 16000, prix_de: 20900, profit: 3550, delta: 30.6, score: "✅ Bon", annee: 1990, km: 200705, carb: "Essence", lien: "https://www.lesanciennes.com/annonce/porsche-944-s2-1990-a851065", lien_de: "https://www.kleinanzeigen.de/s-autos/porsche-944/k0c216", plateforme: "LesAnciennes" },
-  { titre: "Mercedes C202 W202 — 1999", prix_fr: 3200, prix_de: 7500, profit: 2950, delta: 134.4, score: "👍 Intéressant", annee: 1999, km: 380000, carb: "Diesel", lien: "https://www.leboncoin.fr/ad/voitures/3176895420", lien_de: "https://suchen.mobile.de/fahrzeuge/search.html?sfmr=false&vc=Car&searchText=Mercedes+C-Klasse+W202&minPrice=1500&maxPrice=12000&maxFirstRegistrationDate=2000-12-31", plateforme: "LeBonCoin" },
-  { titre: "Mercedes SL 320 R129 — 1994", prix_fr: 15900, prix_de: 20200, profit: 2950, delta: 27, score: "👍 Intéressant", annee: 1994, km: 180900, carb: "Essence", lien: "https://www.lesanciennes.com/annonce/mercedes-roadster-r129-sl-320-bva-1994-a861717", lien_de: "https://www.kleinanzeigen.de/s-autos/mercedes-sl-r129/k0c216", plateforme: "LesAnciennes" },
-  { titre: "VW Corrado — 1990", prix_fr: 8900, prix_de: 12500, profit: 2250, delta: 40.4, score: "👍 Intéressant", annee: 1990, km: 165000, carb: "Essence", lien: "https://www.leboncoin.fr/ad/voitures/3175167820", lien_de: "https://suchen.mobile.de/fahrzeuge/search.html?sfmr=false&vc=Car&searchText=VW+Corrado&minPrice=5000&maxPrice=25000&maxFirstRegistrationDate=1995-12-31", plateforme: "LeBonCoin" },
-  { titre: "Audi 80 B1 — 1982", prix_fr: 4000, prix_de: 7500, profit: 2150, delta: 87.5, score: "👍 Intéressant", annee: 1982, km: 201234, carb: "Diesel", lien: "https://www.lesanciennes.com/annonce/audi-80-81cr2-1982-a809250", lien_de: "https://suchen.mobile.de/fahrzeuge/search.html?sfmr=false&vc=Car&searchText=Audi+80+B4&minPrice=2000&maxPrice=12000&maxFirstRegistrationDate=1996-12-31", plateforme: "LesAnciennes" },
-  { titre: "Mercedes 450 SL R107 — 1980", prix_fr: 6900, prix_de: 10000, profit: 1750, delta: 44.9, score: "➡️ Faible", annee: 1980, km: 253700, carb: "Essence", lien: "https://www.lesanciennes.com/annonce/mercedes-450-sl-1980-a855119", lien_de: "https://suchen.mobile.de/fahrzeuge/search.html?sfmr=false&vc=Car&searchText=Mercedes+W124&minPrice=2000&maxPrice=20000&maxFirstRegistrationDate=1997-12-31", plateforme: "LesAnciennes" },
-  { titre: "VW Golf I Luxe — 1977", prix_fr: 7500, prix_de: 10500, profit: 1650, delta: 40, score: "➡️ Faible", annee: 1977, km: 24015, carb: "Essence", lien: "https://www.lesanciennes.com/annonce/volkswagen-golf-luxe-1977-a838888", lien_de: "https://suchen.mobile.de/fahrzeuge/search.html?sfmr=false&vc=Car&searchText=VW+Golf+2+GTI&minPrice=3000&maxPrice=20000&maxFirstRegistrationDate=1992-12-31", plateforme: "LesAnciennes" },
-];
-
-// State
-let filterScore = 'all';
-let filterMarque = 'all';
-let filterProfitMin = 0;
-
-function getMarque(titre) {
-  const s = titre.toLowerCase();
-  if (s.includes('porsche')) return 'Porsche';
-  if (s.includes('bmw')) return 'BMW';
-  if (s.includes('mercedes')) return 'Mercedes';
-  if (s.includes('audi')) return 'Audi';
-  if (s.includes('volkswagen') || s.includes('vw') || s.includes('golf') || s.includes('corrado')) return 'Volkswagen';
-  return 'Autre';
-}
-
-function fmtEur(n) {
-  return n.toLocaleString('fr-FR') + '\u202f€';
-}
-function fmtKm(n) {
-  return n ? n.toLocaleString('fr-FR') + ' km' : '—';
-}
-
-function scoreClass(s) {
-  if (s.includes('Exceptionnel')) return 'exceptional';
-  if (s.includes('Excellent')) return 'excellent';
-  if (s.includes('Bon')) return 'bon';
-  return '';
-}
-function scoreBadgeClass(s) {
-  if (s.includes('Exceptionnel')) return 'score-exceptional';
-  if (s.includes('Excellent')) return 'score-excellent';
-  if (s.includes('Bon')) return 'score-bon';
-  if (s.includes('Intéressant')) return 'score-interessant';
-  return 'score-faible';
-}
-
-function profitClass(p) {
-  return p >= 8000 ? 'profit-amber' : 'profit-green';
-}
-
-function platDot(p) {
-  if (p === 'LeBonCoin') return 'plat-lbc';
-  if (p === 'LesAnciennes') return 'plat-les';
-  return 'plat-as';
-}
-
-function filtered() {
-  const prixMin = parseInt(document.getElementById('prixMin').value) || 0;
-  const prixMax = parseInt(document.getElementById('prixMax').value) || Infinity;
-  const anneeMin = parseInt(document.getElementById('anneeMin').value) || 0;
-  const anneeMax = parseInt(document.getElementById('anneeMax').value) || Infinity;
-  return RAW.filter(d => {
-    if (filterScore !== 'all' && d.score !== filterScore) return false;
-    if (filterMarque !== 'all' && getMarque(d.titre) !== filterMarque) return false;
-    if (d.profit < filterProfitMin) return false;
-    if (d.prix_fr < prixMin || d.prix_fr > prixMax) return false;
-    if (d.annee && (d.annee < anneeMin || d.annee > anneeMax)) return false;
+function filtered(){
+  return RAW.filter(d=>{
+    if(fScore!=='all'&&d.score!==fScore)return false;
+    if(fMarque!=='all'&&getMarque(d.titre)!==fMarque)return false;
+    if(d.profit<fProfit)return false;
     return true;
   });
 }
 
-function renderKPIs() {
-  const all = RAW;
-  const profitable = all.filter(d => d.profit > 0);
-  const best = Math.max(...profitable.map(d => d.profit));
-  const avg = Math.round(profitable.reduce((s, d) => s + d.profit, 0) / profitable.length);
-  const exceptional = all.filter(d => d.score.includes('Exceptionnel')).length;
-
-  document.getElementById('kpis').innerHTML = `
-    <div class="kpi">
-      <div class="kpi-label">${t('kpi_opps')}</div>
-      <div class="kpi-value">${all.length}</div>
-      <div class="kpi-sub">${t('kpi_opps_sub')}</div>
+function render(){
+  const data=filtered();
+  document.getElementById('meta').innerHTML='<b>'+data.length+'</b> résultat'+(data.length!==1?'s':'')+' affiché'+(data.length!==1?'s':'');
+  if(!data.length){document.getElementById('grid').innerHTML='<div class="empty">Aucun résultat.</div>';return;}
+  document.getElementById('grid').innerHTML=data.map(d=>`
+<div class="card ${scoreCard(d.score)}">
+  <div class="card-top">
+    <div class="card-title">${d.titre}</div>
+    <span class="sbadge ${scoreBadge(d.score)}">${d.score}</span>
+  </div>
+  <div class="prices">
+    <div class="pb"><span class="plbl">Prix FR</span><span class="pval">${fmt(d.prix_fr)}</span></div>
+    <div class="pb"><span class="plbl">Réf DE</span><span class="pval">${fmt(d.prix_de)}</span></div>
+    <div class="pb"><span class="plbl">Profit</span><span class="pval ${d.profit>=8000?'pa':'pg'}">${fmt(d.profit)}</span></div>
+  </div>
+  <div class="tags">
+    ${d.annee?'<span class="tag">'+d.annee+'</span>':''}
+    ${d.km?'<span class="tag">'+fmtKm(d.km)+'</span>':''}
+    ${d.carb?'<span class="tag">'+d.carb+'</span>':''}
+    <span class="dpill">+${d.delta}%</span>
+  </div>
+  <div class="cfoot">
+    <div class="platag"><span class="dot ${platClass(d.plateforme)}"></span>${d.plateforme}</div>
+    <div class="links">
+      ${d.lien?'<a class="clink lkfr" href="'+d.lien+'" target="_blank" rel="noopener">🇫🇷 FR '+SVG+'</a>':''}
+      ${d.lien_de?'<a class="clink lkde" href="'+d.lien_de+'" target="_blank" rel="noopener">🇩🇪 DE '+SVG+'</a>':''}
     </div>
-    <div class="kpi">
-      <div class="kpi-label">${t('kpi_best')}</div>
-      <div class="kpi-value amber">${fmtEur(best)}</div>
-      <div class="kpi-sub">${t('kpi_best_sub')}</div>
-    </div>
-    <div class="kpi">
-      <div class="kpi-label">${t('kpi_avg')}</div>
-      <div class="kpi-value green">${fmtEur(avg)}</div>
-      <div class="kpi-sub">${t('kpi_avg_sub')}</div>
-    </div>
-    <div class="kpi">
-      <div class="kpi-label">${t('kpi_exc')}</div>
-      <div class="kpi-value">${exceptional}</div>
-      <div class="kpi-sub">${t('kpi_exc_sub')}</div>
-    </div>
-    <div class="kpi">
-      <div class="kpi-label">${t('kpi_fees')}</div>
-      <div class="kpi-value" style="font-size:1.1rem;color:var(--muted)">1 350€</div>
-      <div class="kpi-sub">${t('kpi_fees_sub')}</div>
-    </div>
-  `;
+  </div>
+</div>`).join('');
 }
 
-function renderGrid() {
-  const data = filtered();
-  document.getElementById('resultsMeta').innerHTML = t('results')(data.length);
+function setScore(v,b){fScore=v;document.querySelectorAll('[data-score]').forEach(x=>x.classList.remove('on'));b.classList.add('on');render();}
+function setMarque(v,b){fMarque=v;document.querySelectorAll('[data-marque]').forEach(x=>x.classList.remove('on'));b.classList.add('on');render();}
+function setProfit(v,b){fProfit=v;document.querySelectorAll('[data-p]').forEach(x=>x.classList.remove('on'));b.classList.add('on');render();}
 
-  if (!data.length) {
-    document.getElementById('grid').innerHTML = `<div class="empty">${t('empty')}</div>`;
-    return;
-  }
-
-  document.getElementById('grid').innerHTML = data.map(d => `
-    <div class="card ${scoreClass(d.score)}">
-      <div class="card-top">
-        <div class="card-title">${d.titre}</div>
-        <span class="score-badge ${scoreBadgeClass(d.score)}">${d.score}</span>
-      </div>
-
-      <div class="card-prices">
-        <div class="price-block">
-          <span class="price-label">${t('lbl_priceFR')}</span>
-          <span class="price-val">${fmtEur(d.prix_fr)}</span>
-        </div>
-        <div class="price-block">
-          <span class="price-label">${t('lbl_priceDE')}</span>
-          <span class="price-val">${fmtEur(d.prix_de)}</span>
-        </div>
-        <div class="price-block">
-          <span class="price-label">${t('lbl_profit')}</span>
-          <span class="price-val ${profitClass(d.profit)}">${fmtEur(d.profit)}</span>
-        </div>
-      </div>
-
-      <div class="card-meta">
-        ${d.annee ? `<span class="meta-tag">${d.annee}</span>` : ''}
-        ${d.km ? `<span class="meta-tag">${fmtKm(d.km)}</span>` : ''}
-        ${d.carb ? `<span class="meta-tag">${d.carb}</span>` : ''}
-        <span class="delta-pill">+${d.delta}%</span>
-      </div>
-
-      <div class="card-footer">
-        <div class="plat-tag">
-          <span class="plat-dot ${platDot(d.plateforme)}"></span>
-          ${d.plateforme}
-        </div>
-        <div style="display:flex;gap:6px">
-          <a class="card-link" href="${d.lien}" target="_blank" rel="noopener noreferrer">
-            ${t('annonce')}
-            <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5">
-              <path d="M2 10L10 2M5 2h5v5"/>
-            </svg>
-          </a>
-          ${d.lien_de ? `<a class="card-link card-link-de" href="${d.lien_de}" target="_blank" rel="noopener noreferrer">
-            ${t('refDE')}
-            <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5">
-              <path d="M2 10L10 2M5 2h5v5"/>
-            </svg>
-          </a>` : ''}
-        </div>
-      </div>
-    </div>
-  `).join('');
-}
-
-function setScore(val, btn) {
-  filterScore = val;
-  document.querySelectorAll('[data-score]').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
-  renderGrid();
-}
-
-function setMarque(val, btn) {
-  filterMarque = val;
-  document.querySelectorAll('[data-marque]').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
-  renderGrid();
-}
-
-function setProfitMin(val) {
-  filterProfitMin = parseInt(val);
-  document.getElementById('profitVal').textContent = parseInt(val).toLocaleString('fr-FR') + '€';
-  renderGrid();
-}
-
-function launchScan() {
-  const btn = document.getElementById('scanBtn');
-  const panel = document.getElementById('logPanel');
-  const content = document.getElementById('logContent');
-
-  btn.disabled = true;
-  btn.classList.add('running');
-  btn.textContent = '⏳ Scan en cours…';
-  content.innerHTML = '';
-  panel.style.display = 'block';
-
-  const marques = filterMarque !== 'all' ? [filterMarque] : [];
-
-  fetch('/api/scan', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ marques }),
-  }).then(res => {
-    const reader = res.body.getReader();
-    const dec = new TextDecoder();
-    let buf = '';
-    function pump() {
-      reader.read().then(({ done, value }) => {
-        if (done) { reset(); return; }
-        buf += dec.decode(value, { stream: true });
-        buf.split('\n').forEach((line, i, arr) => {
-          if (i === arr.length - 1) { buf = line; return; }
-          if (!line.startsWith('data: ')) return;
-          try {
-            const { type, msg } = JSON.parse(line.slice(6));
-            msg.split('\n').filter(Boolean).forEach(m => {
-              const div = document.createElement('div');
-              div.className = `log-line-${type}`;
-              div.textContent = m;
-              content.appendChild(div);
-            });
-            content.scrollTop = content.scrollHeight;
-            if (type === 'done') reset();
-          } catch {}
-        });
-        pump();
-      });
-    }
-    pump();
-  }).catch(() => {
-    const div = document.createElement('div');
-    div.className = 'log-line-err';
-    div.textContent = '❌ Serveur inaccessible. Lancez: node server.js';
-    content.appendChild(div);
-    reset();
-  });
-
-  function reset() {
-    btn.disabled = false;
-    btn.classList.remove('running');
-    btn.textContent = '⚡ Lancer le scan';
-  }
-}
-
-renderKPIs();
-renderGrid();
+render();
 </script>
-
 </body>
 </html>
