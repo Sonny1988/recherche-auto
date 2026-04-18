@@ -5,11 +5,13 @@
   "type": "module",
   "scripts": {
     "start": "node src/run.js",
+    "dashboard": "node server.js",
     "setup": "node scripts/setup-airtable.js",
     "test:leboncoin": "node src/scrapers/leboncoin.js",
     "test:autoscout": "node src/scrapers/autoscout.js"
   },
   "dependencies": {
+    "@mendable/firecrawl-js": "^4.18.3",
     "airtable": "^0.12.2",
     "axios": "^1.7.0",
     "cheerio": "^1.0.0",

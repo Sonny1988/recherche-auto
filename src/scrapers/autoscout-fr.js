@@ -8,24 +8,29 @@ const HEADERS = {
   'Accept-Language': 'fr-FR,fr;q=0.9',
 };
 
+const MARQUE_SLUGS = {
+  'BMW': 'bmw',
+  'Mercedes': 'mercedes-benz',
+  'Porsche': 'porsche',
+  'VW': 'volkswagen',
+  'Audi': 'audi',
+};
+
 function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
 function parsePrice(s) { const n = parseInt((s||'').replace(/[^\d]/g,'')); return n>500&&n<500000?n:null; }
 function parseKm(s) { return parseInt((s||'').replace(/[^\d]/g,''))||null; }
 function parseYear(s) { const m=(s||'').match(/(\d{4})/); return m?parseInt(m[1]):null; }
 
-function buildUrl(target) {
-  if (target.type === 'camping-car') {
-    // camping-cars : atype=N, filtrer par marque via slug
-    const params = new URLSearchParams({ atype: 'N', cy: 'F', sort: 'age', desc: '0' });
-    return `https://www.autoscout24.fr/lst/${target.marqueDE}?${params}`;
-  }
+function buildUrl(target, page = 1) {
+  const slug = MARQUE_SLUGS[target.marque] || target.marque.toLowerCase();
   const params = new URLSearchParams({
     atype: 'C', cy: 'F', sort: 'age', desc: '0',
     pricefrom: target.minPrice,
     priceto: target.maxPrice,
-    fregfrom: target.minYear || 2015,
+    fregto: target.maxYear,
+    page,
   });
-  return `https://www.autoscout24.fr/lst/${target.marqueDE}?${params}`;
+  return `https://www.autoscout24.fr/lst/${slug}?${params}`;
 }
 
 function parseListing(item, target) {
@@ -39,17 +44,17 @@ function parseListing(item, target) {
   const km = parseKm(item.vehicle?.mileageInKm);
   const year = parseYear(reg);
 
-  // Filtrer camping-cars par marque dans le titre/make
-  if (target.type === 'camping-car') {
-    const titleLower = `${make} ${model} ${variant}`.toLowerCase();
-    if (!titleLower.includes(target.marque.toLowerCase().split(' ')[0].toLowerCase())) {
-      return null;
-    }
-  }
+  // Filtrer par année max
+  if (year && year > target.maxYear) return null;
+
+  // Filtrer par mot-clé modèle (ex: "E30", "W124", "944")
+  const fullTitle = `${make} ${model} ${variant}`.toLowerCase();
+  const keywords = target.searchFR.toLowerCase().split(' ').slice(1);
+  if (keywords.length && !keywords.some(k => fullTitle.includes(k))) return null;
 
   return {
-    id: item.id || item.crossReferenceId,
-    titre: `${make} ${model} ${variant}`.trim(),
+    id: `as24-${item.id || item.crossReferenceId}`,
+    titre: `${make} ${model} ${variant}`.trim().slice(0, 100),
     prix_fr: price,
     annee: year,
     km,
@@ -57,33 +62,50 @@ function parseListing(item, target) {
     boite: item.vehicle?.transmission || null,
     localisation: `${item.location?.city || ''} (${item.location?.countryCode || 'FR'})`,
     vendeur_pro: item.seller?.type === 'D',
-    lien: item.url || `https://www.autoscout24.fr/offres/${item.id}`,
+    lien: item.url ? `https://www.autoscout24.fr${item.url}` : `https://www.autoscout24.fr/offres/${item.id}`,
     photos: (item.images || []).slice(0, 3),
     plateforme: 'AutoScout24.fr',
-    type: target.type || 'voiture',
-    marqueDE: target.marqueDE,
-    modeleDE: target.modeleDE,
+    type: 'youngtimer',
+    _target: target,
   };
 }
 
+const PAGES = 3;
+
 export async function searchAutoscoutFR(target) {
-  const url = buildUrl(target);
-  try {
-    const r = await axios.get(url, { headers: HEADERS, timeout: 20000 });
-    const $ = cheerio.load(r.data);
-    const raw = $('script#__NEXT_DATA__').text();
-    if (!raw) throw new Error('NEXT_DATA absent');
+  const allResults = [];
+  const seen = new Set();
 
-    const data = JSON.parse(raw);
-    const listings = Object.values(data?.props?.pageProps?.listings || {});
-    const results = listings.map(l => parseListing(l, target)).filter(Boolean);
+  for (let page = 1; page <= PAGES; page++) {
+    const url = buildUrl(target, page);
+    try {
+      const r = await axios.get(url, { headers: HEADERS, timeout: 20000 });
+      const $ = cheerio.load(r.data);
+      const raw = $('script#__NEXT_DATA__').text();
+      if (!raw) break;
 
-    console.log(`[AutoScout24.fr] ${target.marque} ${target.modele || ''} → ${results.length} annonces`);
-    return results;
-  } catch (err) {
-    console.error(`[AutoScout24.fr] Erreur ${target.marque}: ${err.message}`);
-    return [];
+      const data = JSON.parse(raw);
+      const listings = Object.values(data?.props?.pageProps?.listings || {});
+      if (!listings.length) break;
+
+      const results = listings
+        .map(l => parseListing(l, target))
+        .filter(Boolean)
+        .filter(l => !seen.has(l.id));
+
+      results.forEach(l => seen.add(l.id));
+      allResults.push(...results);
+
+      if (listings.length < 20) break; // dernière page
+      if (page < PAGES) await sleep(DELAY_MS);
+    } catch (err) {
+      console.error(`[AutoScout24.fr] Erreur ${target.marque} p${page}: ${err.message}`);
+      break;
+    }
   }
+
+  console.log(`[AutoScout24.fr] ${target.searchFR} → ${allResults.length} annonces`);
+  return allResults;
 }
 
 export async function searchAllFrance(targets) {

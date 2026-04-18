@@ -29,57 +29,76 @@ function toRecord(v) {
   };
 }
 
-// Cherche si l'annonce existe déjà (par ID annonce)
-async function findExisting(annonceId) {
-  try {
-    const records = await base(TABLE).select({
-      filterByFormula: `{ID Annonce} = "${annonceId}"`,
-      maxRecords: 1,
-    }).firstPage();
-    return records[0] || null;
-  } catch {
-    return null;
-  }
+function updateFields(v) {
+  return {
+    'Prix France (€)': v.prix_fr || 0,
+    'Prix Référence DE (€)': v.prix_de_ref || 0,
+    'Profit Brut (€)': v.profit_brut || 0,
+    'Delta %': v.delta_pct || 0,
+    'Score': v.score_label || '',
+    'Opportunité': v.opportunite ? true : false,
+    'Lien Annonce FR': v.lien || '',
+    'Lien Référence DE': v.url_de_ref || '',
+  };
 }
 
-export async function upsertVehicule(vehicule) {
-  const existing = await findExisting(vehicule.id);
-  const fields = {
-    ...toRecord(vehicule),
-    'ID Annonce': vehicule.id || '',
-  };
-
-  if (existing) {
-    // Mise à jour du prix et du score uniquement (ne pas écraser le statut)
-    await base(TABLE).update(existing.id, {
-      'Prix France (€)': fields['Prix France (€)'],
-      'Prix Référence DE (€)': fields['Prix Référence DE (€)'],
-      'Profit Brut (€)': fields['Profit Brut (€)'],
-      'Delta %': fields['Delta %'],
-      'Score': fields['Score'],
-      'Opportunité': fields['Opportunité'],
-    });
-    return { action: 'updated', id: existing.id };
-  } else {
-    const created = await base(TABLE).create(fields);
-    return { action: 'created', id: created.id };
-  }
+function chunk(arr, size) {
+  const chunks = [];
+  for (let i = 0; i < arr.length; i += size) chunks.push(arr.slice(i, i + size));
+  return chunks;
 }
 
 export async function syncAll(vehicules) {
   let created = 0, updated = 0, errors = 0;
 
-  for (const v of vehicules) {
-    try {
-      const result = await upsertVehicule(v);
-      if (result.action === 'created') created++;
-      else updated++;
-      // Airtable rate limit: 5 req/sec
-      await new Promise(r => setTimeout(r, 220));
-    } catch (err) {
-      console.error(`[Airtable] Erreur pour ${v.titre}: ${err.message}`);
-      errors++;
+  try {
+    // Fetch tous les records existants en une seule passe
+    const existing = await base(TABLE).select({
+      fields: ['ID Annonce'],
+      maxRecords: 2000,
+    }).all();
+
+    const existingMap = new Map(existing.map(r => [r.get('ID Annonce'), r.id]));
+
+    const toCreate = [];
+    const toUpdate = [];
+
+    for (const v of vehicules) {
+      const annonceId = v.id || '';
+      if (existingMap.has(annonceId)) {
+        toUpdate.push({ id: existingMap.get(annonceId), fields: updateFields(v) });
+      } else {
+        toCreate.push({ fields: { ...toRecord(v), 'ID Annonce': annonceId } });
+      }
     }
+
+    // Batch creates — 10 à la fois
+    for (const batch of chunk(toCreate, 10)) {
+      try {
+        await base(TABLE).create(batch);
+        created += batch.length;
+      } catch (err) {
+        console.error(`[Airtable] Erreur batch create: ${err.message}`);
+        errors += batch.length;
+      }
+      await new Promise(r => setTimeout(r, 250));
+    }
+
+    // Batch updates — 10 à la fois
+    for (const batch of chunk(toUpdate, 10)) {
+      try {
+        await base(TABLE).update(batch);
+        updated += batch.length;
+      } catch (err) {
+        console.error(`[Airtable] Erreur batch update: ${err.message}`);
+        errors += batch.length;
+      }
+      await new Promise(r => setTimeout(r, 250));
+    }
+
+  } catch (err) {
+    console.error(`[Airtable] Erreur fetch existing: ${err.message}`);
+    errors = vehicules.length;
   }
 
   console.log(`[Airtable] Sync: ${created} créés, ${updated} mis à jour, ${errors} erreurs`);
